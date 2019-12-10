@@ -18,13 +18,13 @@ module JsonUtil =
         | _ -> None
 
     let defk (key:string) v =
-      let ex () = raise (new Exception(String.Format("'{0}' key not found", key)))
+      let ex () = raise (Exception(String.Format("'{0}' key not found", key)))
       Option.defaultWith ex v
 
     let defaultRaise msg =
       function
         | Some a -> a
-        | None -> raise (new Exception(msg))
+        | None -> raise (Exception(msg))
 
     let getkey key =
       function
@@ -42,4 +42,4 @@ module JsonUtil =
         strBuilder
 
     let byteHexStr (bs:byte[]) =
-        (Array.fold addHexByte (new StringBuilder()) bs).ToString()
+        (Array.fold addHexByte (StringBuilder()) bs).ToString()

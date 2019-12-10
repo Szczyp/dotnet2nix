@@ -20,14 +20,14 @@ module Application =
         let libs =
             match JsonUtil.getkey "libraries" json with
               | Some (Json.Object o) -> o
-              | _ -> raise (new Exception("Library json was not an object"))
+              | _ -> raise (Exception("Library json was not an object"))
 
         let combineProjectLibs libs key lib =
             let libPath =
               lazy
               match JsonUtil.strkey "path" lib with
                 | Some s -> s
-                | _ -> raise (new Exception("No path found in project"))
+                | _ -> raise (Exception("No path found in project"))
 
             match JsonUtil.strkey "type" lib with
               | Some "project" ->
@@ -35,8 +35,8 @@ module Application =
                   try
                       let projectAssets = Path.Combine(otherProj, "obj/project.assets.json")
                       let projectLibs = loadLibraries projectAssets
-                      let libs_ = Map.fold (fun o k v -> Map.add k v o) libs projectLibs
-                      Map.remove key libs_
+                      Map.fold (fun o k v -> Map.add k v o) libs projectLibs
+                      |> Map.remove key
                   with
                       | _ -> Map.remove key libs
               | _ -> libs
@@ -57,12 +57,12 @@ module Application =
         proc.WaitForExit()
         output.Trim()
 
-    let rec makePackage ((libName,lib):string * Json) =
+    let makePackage ((libName,lib):string * Json) =
 
         let (name, ver) =
           match libName.Split('/') with
             | [| name; ver |] -> (name, ver)
-            | _ -> raise (new Exception("name and version not found in library name"))
+            | _ -> raise (Exception("name and version not found in library name"))
 
         let pathName = sprintf "%s-%s.zip" name ver
         let url    = sprintf "https://www.nuget.org/api/v2/package/%s/%s" name ver
@@ -98,8 +98,10 @@ module Application =
 
         Json.Object objMap
 
-    let usage = lazy let _ = Console.WriteLine("dotnet2nix Some.Project/obj/project.assets.json [output-nuget-packages.json]")
-                     1
+    let usage = lazy (
+        Console.WriteLine("dotnet2nix Some.Project/obj/project.assets.json [output-nuget-packages.json]")
+        1
+      )
 
     [<EntryPoint>]
     let main argv =
